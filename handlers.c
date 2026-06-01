@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include "path.h"
 #include "handlers.h"
+#include "index.h"
 
 #define BACKING_DIR "/mnt/work/Research/filesystem_testing/data"
 
@@ -84,7 +85,7 @@ int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
         filler(buf, ".", NULL, 0, 0);
         filler(buf, "..", NULL, 0, 0);
 
-        filler(buf, "search", NULL, 0, 0); // add "search" directory entry
+        filler(buf, "search", NULL, 0, 0); // add "search" directory entry; this is a virtual path. It does not exist on the disk.
 
         DIR *dp = opendir(BACKING_DIR);
         if (!dp)
@@ -103,9 +104,35 @@ int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
         return 0;
     }
 
-    if (is_search_path(path)) {
+    if (strcmp(path, "/search") == 0) {
+
         filler(buf, ".", NULL, 0, 0);
         filler(buf, "..", NULL, 0, 0);
+
+        return 0;
+    }
+
+    const char *query = get_search_query(path);
+
+    if (query) {
+
+        filler(buf, ".", NULL, 0, 0);
+        filler(buf, "..", NULL, 0, 0);
+
+        for (int i = 0; i < file_count; i++) {
+
+            if (strstr(indexed_files[i].path, query)) {
+
+                filler(
+                    buf,
+                    indexed_files[i].path,
+                    NULL,
+                    0,
+                    0
+                );
+            }
+        }
+
         return 0;
     }
 

@@ -1,8 +1,12 @@
 #define FUSE_USE_VERSION 31
 #include <fuse3/fuse.h>
 #include "handlers.h"
+#include "index.h"
 
-// gcc main.c handlers.c path.c -o fs `pkg-config fuse3 --cflags --libs` -D_FILE_OFFSET_BITS=64
+// gcc main.c handlers.c path.c index.c \
+          -D_FILE_OFFSET_BITS=64 \
+          -o fs \
+          -lfuse3 -lpthread
 
 
 static struct fuse_operations ops = { // define fuse operations
@@ -12,5 +16,7 @@ static struct fuse_operations ops = { // define fuse operations
 };
 
 int main(int argc, char *argv[]) {
+    build_index();
+
     return fuse_main(argc, argv, &ops, NULL); // start fuse main loop
 }

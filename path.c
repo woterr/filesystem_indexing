@@ -11,3 +11,11 @@ int is_search_path(const char *path) {
 void build_fullpath(char *dest, const char *path) {
     snprintf(dest, 512, "%s%s", BACKING_DIR, path);
 }
+
+const char *get_search_query(const char *path)
+{
+    if (strncmp(path, "/search/", 8) != 0)
+        return NULL;
+
+    return path + 8;
+}
